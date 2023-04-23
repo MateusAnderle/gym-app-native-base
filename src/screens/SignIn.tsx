@@ -106,7 +106,7 @@ export function SignIn() {
             rules={{ required: "Informe a senha" }}
             render={({ field: { onChange } }) => (
               <Input
-                placeholder="E-mail"
+                placeholder="Senha"
                 secureTextEntry
                 onChangeText={onChange}
                 errorMessage={errors.password?.message}
