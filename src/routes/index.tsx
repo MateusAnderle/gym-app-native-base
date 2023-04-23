@@ -4,20 +4,24 @@ import { AppRoutes } from "./app.routes";
 import { Box, useTheme } from "native-base";
 import { useContext } from "react";
 import { AuthContext } from "@contexts/AuthContext";
+import { useAuth } from "@hooks/useAuth";
+import { Loading } from "@components/Loading";
 
 export function Routes() {
   const { colors } = useTheme();
-
-  const contextData = useContext(AuthContext);
-  console.log(contextData);
+  const { user, isLoadingUserStorageData } = useAuth();
 
   const theme = DefaultTheme;
   theme.colors.background = colors.gray[700];
 
+  if (isLoadingUserStorageData) {
+    return <Loading />;
+  }
+
   return (
     <Box flex={1} bg="gray.700">
       <NavigationContainer>
-        <AuthRoutes />
+        {user.id ? <AppRoutes /> : <AuthRoutes />}
       </NavigationContainer>
     </Box>
   );
