@@ -20,7 +20,7 @@ const api = axios.create({
   baseURL: "http://192.168.100.49:3333",
 }) as APIInstanceProps;
 
-let failQueue: Array<PromiseType> = [];
+let failedQueued: Array<PromiseType> = [];
 let isRefreshing = false;
 
 api.registerInterceptTokenManager = (signOut) => {
@@ -43,7 +43,7 @@ api.registerInterceptTokenManager = (signOut) => {
 
           if (isRefreshing) {
             return new Promise((resolve, reject) => {
-              failQueue.push({
+              failedQueued.push({
                 onSuccess: (token: string) => {
                   originalRequestConfig.headers = {
                     Authorization: `Bearer ${token}`,
@@ -61,7 +61,7 @@ api.registerInterceptTokenManager = (signOut) => {
 
           return new Promise(async (resolve, reject) => {
             try {
-              const { data } = await api.post("/sessions/refresh_token", {
+              const { data } = await api.post("/sessions/refresh-token", {
                 refresh_token,
               });
               await storageAuthTokenSave({
@@ -83,22 +83,20 @@ api.registerInterceptTokenManager = (signOut) => {
                 "Authorization"
               ] = `Bearer ${data.token}`;
 
-              failQueue.forEach((request) => {
+              failedQueued.forEach((request) => {
                 request.onSuccess(data.token);
               });
 
               resolve(api(originalRequestConfig));
-
-              console.log("TOKEN ATUALIZADO");
             } catch (error: any) {
-              failQueue.forEach((request) => {
+              failedQueued.forEach((request) => {
                 request.onFailure(error);
               });
               signOut();
               reject(error);
             } finally {
               isRefreshing = false;
-              failQueue = [];
+              failedQueued = [];
             }
           });
         }
